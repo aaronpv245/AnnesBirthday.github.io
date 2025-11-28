@@ -12,111 +12,116 @@
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #ffffff; /* Fallback */
+            background-color: #ffffff;
             font-family: 'Playfair Display', serif;
-            overflow: hidden; /* Prevent scrolling to keep the "app" feel */
-        }
-
-        /* --- BACKGROUND CANVAS --- */
-        canvas {
-            display: block;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 0; /* Background layer */
-            pointer-events: none; 
-        }
-
-        /* --- BINGO UI CONTAINER --- */
-        #app {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none; /* Let clicks pass through empty areas */
-        }
-
-        /* The Anchor: Sits exactly where the canvas center is */
-        .center-anchor {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 0;
-            height: 0;
+            overflow: hidden; /* We handle scaling manually */
             display: flex;
             align-items: center;
             justify-content: center;
-            pointer-events: auto; /* Re-enable clicks for content */
         }
 
-        /* --- HEADERS (Positioned Above Square) --- */
+        /* --- THE SCALING CONTAINER --- 
+           Everything lives in here. We design for a fixed "Base Resolution"
+           of roughly 1000px x 1000px, and then JS scales this entire div 
+           to fit the screen. 
+        */
+        #main-container {
+            position: relative;
+            width: 1000px;
+            height: 1000px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform-origin: center center;
+        }
+
+        /* --- BACKGROUND CANVAS --- 
+           Now absolute INSIDE the container so it scales with it.
+        */
+        canvas {
+            display: block;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            pointer-events: none; 
+        }
+
+        /* --- HEADERS (Positioned relative to container center) --- */
         .header-group {
             position: absolute;
-            bottom: 360px; /* Increased from 320px to move it further up above the vines */
-            width: 800px;
+            /* Positioned above the 600px vine square (which starts at y=200px relative to container) */
+            top: 50px; 
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
             text-align: center;
+            z-index: 2;
         }
 
         h1 {
             color: #1a45a0;
-            font-size: 3.5rem;
-            margin: 0 0 20px 0; /* Increased margin for better separation */
-            text-shadow: 2px 2px 0px #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+            font-size: 4rem;
+            margin: 0 0 5px 0; 
+            text-shadow: 3px 3px 0px #fff, -1px -1px 0 #fff;
             font-style: italic;
             white-space: nowrap;
         }
 
         .subtitle {
             color: #123275;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             display: inline-block;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 5px 20px;
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 30px;
+            border-radius: 30px;
             border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
-        /* --- ORGANIC GRID (Fits inside 600px square) --- */
+        /* --- ORGANIC GRID --- */
         .bingo-grid {
+            position: absolute;
+            /* Centering the grid perfectly in the container */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-            /* 460px fits comfortably inside the 600px vine square */
+            gap: 5px;
+            /* 460px fits inside the 600px vine square */
             width: 460px; 
             height: 460px;
-            position: relative;
         }
 
         .bingo-cell {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #1a45a0;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1.5px solid #1a45a0;
             color: #1a45a0;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             padding: 2px;
-            font-size: 0.65rem; /* Smaller font to fit text in 7x7 */
+            font-size: 0.7rem; 
             line-height: 1.1;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.2s ease, background 0.2s ease;
+            transition: transform 0.15s ease, background 0.15s ease;
             user-select: none;
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
-            
-            /* Organic Borders */
-            border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+            box-shadow: 2px 2px 4px rgba(26, 69, 160, 0.15);
+            /* Initial organic radius - JS adds variety */
+            border-radius: 15px; 
         }
 
         .bingo-cell:hover {
-            transform: scale(1.1);
+            transform: scale(1.15);
             background: #fff;
             z-index: 10;
             border-color: #123275;
+            box-shadow: 4px 4px 8px rgba(26, 69, 160, 0.25);
         }
 
         /* Selected State */
@@ -130,81 +135,101 @@
         .bingo-cell.checked::after {
             content: "✓";
             position: absolute;
-            font-size: 1.5rem;
-            color: rgba(255,255,255,0.4);
+            font-size: 1.8rem;
+            color: rgba(255,255,255,0.5);
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) rotate(-15deg);
+            transform: translate(-50%, -50%) rotate(-10deg);
         }
 
         .bingo-cell.center-cell {
-            background-color: #123275;
-            color: #fff;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
         }
 
-        /* --- CONTROLS (Positioned Below Square) --- */
+        /* --- CONTROLS --- */
         .controls {
             position: absolute;
-            top: 340px; /* Push down below the square */
+            /* Pushes button down below the grid and vines */
+            top: 50%;
+            margin-top: 380px; 
+            left: 50%;
+            transform: translateX(-50%);
             text-align: center;
+            z-index: 2;
             width: 100%;
         }
 
         button.reset-btn {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             border: 2px solid #1a45a0;
             color: #1a45a0;
-            padding: 8px 25px;
+            padding: 12px 35px;
             font-family: 'Playfair Display', serif;
-            font-size: 1rem;
+            font-size: 1.2rem;
             font-weight: bold;
             cursor: pointer;
             border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
             transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         button.reset-btn:hover {
             background: #1a45a0;
             color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
         }
 
-        /* Mobile Scale Adjustment */
-        @media (max-width: 600px) {
-            /* Scale the whole anchor down to fit mobile screens */
-            .center-anchor {
-                transform: translate(-50%, -50%) scale(0.65);
-            }
-            /* Adjust canvas scale via CSS if possible, or accept crop */
-        }
     </style>
 </head>
 <body>
 
-<!-- The Background Canvas -->
-<canvas id="patternCanvas"></canvas>
+<!-- Unified Container for Scaling -->
+<div id="main-container">
+    
+    <!-- Background Pattern -->
+    <canvas id="patternCanvas"></canvas>
 
-<!-- The Bingo Application -->
-<div id="app">
-    <div class="center-anchor">
-        
-        <div class="header-group">
-            <h1>Anne's Birthday</h1>
-            <div class="subtitle">Pub Crawl Bingo</div>
-        </div>
-        
-        <div class="bingo-grid" id="grid">
-            <!-- Cells generated by JS -->
-        </div>
-
-        <div class="controls">
-            <button class="reset-btn" onclick="resetBingo()">Reset Board</button>
-        </div>
-
+    <!-- Headers -->
+    <div class="header-group">
+        <h1>Anne's Birthday</h1>
+        <div class="subtitle">Pub Crawl Bingo</div>
     </div>
+    
+    <!-- Grid -->
+    <div class="bingo-grid" id="grid"></div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button class="reset-btn" onclick="resetBingo()">Reset Board</button>
+    </div>
+
 </div>
 
 <script>
+    /* -----------------------------------------------------------
+       SCALING LOGIC
+       ----------------------------------------------------------- */
+    const container = document.getElementById('main-container');
+    
+    function resizeApp() {
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const targetWidth = 1000; // Our base design width
+        const targetHeight = 1000; // Our base design height
+
+        // Determine scale to fit within viewport with some padding
+        const scaleX = (windowWidth - 20) / targetWidth;
+        const scaleY = (windowHeight - 20) / targetHeight;
+        const scale = Math.min(scaleX, scaleY); // Fit to smallest dimension
+
+        container.style.transform = `scale(${scale})`;
+    }
+
+    window.addEventListener('resize', resizeApp);
+    resizeApp(); // Trigger immediately
+
+
     /* -----------------------------------------------------------
        BINGO LOGIC
        ----------------------------------------------------------- */
@@ -213,38 +238,36 @@
         "Take a shot with Anne", "Spot a cute Dog", "Drink Water!", "ID Check", "Spill a Drink", "Group Selfie", "Toilet Selfie",
         "Eat a Fry", "Hear 'I love this song!'", "Stranger says HBD", "Lose the Group", "Find the Group", "Text an Ex", "Karaoke Moment",
         "Bartender's Choice", "Drink a Stout", "Drink a Lager", "Drink a Cider", "Drink a Cocktail", "Buy Anne a Drink", "Compliment Stranger",
-        "Toast Speech", "Glass Break Sound", "Happy Tears", "Piggyback Ride", "SPACE", "High Five Bouncer", "Irish Exit Spotted",
+        "Toast Speech", "Glass Break Sound", "Happy Tears", "Piggyback Ride", "Propose a Toast", "High Five Bouncer", "Irish Exit Spotted",
         "Wrong Pub Entered", "Walk in Rain", "One more drink...", "Order Pizza", "Shoe Untied", "Phone Dies", "Borrow Charger",
         "Spot a Mullet", "Wear a Hat", "Someone Trips", "Get a Free Drink", "Jagerbomb!", "Baby Guinness", "Tequila!",
         "Dance Off", "Request a Song", "Hug Anne", "Anne Laughs", "Photo with Anne", "Pet a Pub Dog", "Survive the Night"
     ];
 
-    const STORAGE_KEY = 'anne_bingo_state_v1';
+    const STORAGE_KEY = 'anne_bingo_state_v2';
 
     function loadState() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
             return JSON.parse(saved);
         }
-        const state = new Array(49).fill(false);
-        return state;
+        return new Array(49).fill(false);
     }
 
     function saveState(state) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    // Run once on page load to create DOM elements
     function initGrid() {
         const gridEl = document.getElementById('grid');
-        gridEl.innerHTML = ''; // Clear initial
+        gridEl.innerHTML = '';
 
         BINGO_TASKS.forEach((task, index) => {
             const cell = document.createElement('div');
             cell.className = 'bingo-cell';
-            cell.id = `cell-${index}`; // ID for referencing later
+            cell.id = `cell-${index}`;
             
-            // Calc random shape once
+            // Generate Organic Shape
             const r1 = 200 + Math.random() * 55;
             const r2 = 10 + Math.random() * 30;
             const r3 = 200 + Math.random() * 55;
@@ -253,16 +276,17 @@
 
             cell.innerText = task;
 
+            if (index === 24) { 
+                cell.classList.add('center-cell');
+            }
 
             cell.onclick = () => toggleCell(index);
             gridEl.appendChild(cell);
         });
 
-        // Apply visual state after creating
         updateGridUI();
     }
 
-    // Only updates CSS classes, does not rebuild DOM
     function updateGridUI() {
         const state = loadState();
         BINGO_TASKS.forEach((_, index) => {
@@ -278,22 +302,17 @@
     function toggleCell(index) {
         const state = loadState();
         state[index] = !state[index];
-        if (index === 25) state[index] = true; // Force center true
-        
         saveState(state);
-        updateGridUI(); // Update existing cells
+        updateGridUI();
     }
 
     function resetBingo() {
-        if(confirm("Are you sure you want to clear the board?")) {
-            const state = new Array(49).fill(false);
-            state[25] = true;
-            saveState(state);
-            updateGridUI();
+        if(confirm("Are you sure you want to clear the board and reset progress?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            updateGridUI(); 
         }
     }
 
-    // Initialize Grid
     initGrid();
 
 
@@ -306,18 +325,17 @@
 
     // Configuration
     const CONFIG = {
-        color: '#1a45a0', // Deep Cobalt
-        detailColor: '#123275', // Darker for fine lines
-        flowerColor: '#2b5bbd', // Main brush stroke blue
+        color: '#1a45a0', 
+        detailColor: '#123275',
+        flowerColor: '#2b5bbd', 
         lineWidth: 0.6, 
         sheetSize: 3000,
-        squareSize: 600, // Size of the vine square
-        sway: 60, // Curvature of the sides
-        layoutSeed: 111, // Seed 111
-        skippedElements: [] // Empty list to ensure all flowers are drawn
+        squareSize: 600, 
+        sway: 60,
+        layoutSeed: 111,
+        skippedElements: []
     };
 
-    // --- Random Generators ---
     let _seed = CONFIG.layoutSeed;
     function layoutRandom() {
         _seed = (_seed * 9301 + 49297) % 233280;
@@ -332,6 +350,7 @@
     let placedElements = [];
 
     function initSheet() {
+        // Fix canvas size to match the large sheet size for high quality
         width = CONFIG.sheetSize;
         height = CONFIG.sheetSize;
         canvas.width = width;
@@ -357,7 +376,7 @@
         return false;
     }
 
-    // --- Drawing Primitives ---
+    // --- Drawing Primitives (Preserved from optimized version) ---
 
     function drawLeaf(x, y, angle, scale) {
         ctx.save();
@@ -395,33 +414,38 @@
         ctx.rotate(angle);
         ctx.scale(scale, scale);
 
-        // Stem
+        const ctrlX = 5 + (variationRandom() - 0.5) * 4;
+        const ctrlY = -2 + (variationRandom() - 0.5) * 4;
+
         ctx.beginPath();
         ctx.strokeStyle = CONFIG.color;
         ctx.lineWidth = 0.5;
         ctx.moveTo(0, 0);
-        ctx.quadraticCurveTo(5, -2, 10, 0);
+        ctx.quadraticCurveTo(ctrlX, ctrlY, 10, 0);
         ctx.stroke();
 
-        // Small bud
+        const budTip = 15 + (variationRandom() - 0.5) * 2; 
+        const budWidth = 3 + (variationRandom() - 0.5) * 1.5; 
+        
         ctx.fillStyle = CONFIG.flowerColor;
         ctx.beginPath();
         ctx.moveTo(10, 0);
-        ctx.bezierCurveTo(12, -3, 14, -3, 15, 0);
-        ctx.bezierCurveTo(14, 3, 12, 3, 10, 0);
+        ctx.bezierCurveTo(12, -budWidth, 14, -budWidth, budTip, 0);
+        ctx.bezierCurveTo(14, budWidth, 12, budWidth, 10, 0);
         ctx.fill();
 
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 0.3;
         ctx.beginPath();
-        ctx.moveTo(11, 0); ctx.lineTo(14, 0);
+        ctx.moveTo(11, 0); ctx.lineTo(budTip - 1, 0);
         ctx.stroke();
 
         const numLeaves = 1 + Math.floor(variationRandom() * 2);
         for(let i=0; i<numLeaves; i++) {
             const t = 0.3 + variationRandom() * 0.4; 
-            const lx = (1-t)*(1-t)*0 + 2*(1-t)*t*5 + t*t*10;
-            const ly = (1-t)*(1-t)*0 + 2*(1-t)*t*(-2) + t*t*0;
+            const mt = 1-t;
+            const lx = mt*mt*0 + 2*mt*t*ctrlX + t*t*10;
+            const ly = mt*mt*0 + 2*mt*t*ctrlY + t*t*0;
             drawLeaf(lx, ly, angle + (variationRandom()>0.5 ? 0.8:-0.8), 0.3);
         }
 
@@ -438,7 +462,6 @@
         ctx.strokeStyle = CONFIG.color;
         ctx.lineWidth = CONFIG.lineWidth;
         
-        // Stem
         ctx.beginPath();
         ctx.moveTo(-2, 0); 
         ctx.quadraticCurveTo(stemLength/2, (layoutRandom()-0.5)*4, stemLength, 0);
@@ -449,7 +472,6 @@
         const cx = (variationRandom() - 0.5) * 1.5;
         const cy = (variationRandom() - 0.5) * 1.5;
 
-        // Buds
         for(let j=-1; j<=1; j++) {
              const fanAngle = j * 0.6; 
              const startDist = 16; 
@@ -469,13 +491,11 @@
              drawBud(bx, by, fanAngle, 0.6);
         }
 
-        // Center
         ctx.fillStyle = CONFIG.detailColor;
         ctx.beginPath();
         ctx.ellipse(cx, cy, 3.5 + (variationRandom()-0.5), 3.5 + (variationRandom()-0.5), variationRandom(), 0, Math.PI*2);
         ctx.fill();
 
-        // Ring
         ctx.strokeStyle = CONFIG.flowerColor;
         ctx.lineWidth = 1;
         ctx.beginPath();
@@ -687,6 +707,8 @@
     function drawPattern() {
         placedElements = [];
 
+        // Note: Canvas clears automatically when redrawn or initialized usually, 
+        // but explicit clear is good practice if resizing/redrawing often
         ctx.fillStyle = '#ffffff'; 
         ctx.fillRect(0, 0, width, height);
 
@@ -696,6 +718,7 @@
             ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
         }
 
+        // Draw Pattern centered in the massive sheet
         const cx = width / 2; 
         const cy = height / 2;
         const size = CONFIG.squareSize;
@@ -720,6 +743,7 @@
         drawDecoratedSide(corners[3].x, corners[3].y, corners[0].x, corners[0].y, -1); 
     }
 
+    // Start
     requestAnimationFrame(initSheet);
 
 </script>
