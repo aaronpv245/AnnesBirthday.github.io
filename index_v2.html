@@ -254,10 +254,6 @@
 
             cell.innerText = task;
 
-            if (index === 25) {
-                cell.classList.add('center-cell');
-                cell.innerText = "ANNE (Free)";
-            }
 
             cell.onclick = () => toggleCell(index);
             gridEl.appendChild(cell);
