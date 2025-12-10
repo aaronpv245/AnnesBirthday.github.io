@@ -14,10 +14,14 @@
             height: 100%;
             background-color: #ffffff;
             font-family: 'Playfair Display', serif;
-            overflow: hidden; /* We handle scaling manually */
+            /* Allow scrolling when the scaled app is larger than viewport */
+            overflow: auto;
             display: flex;
-            align-items: center;
+            /* anchor app to top so header remains visible when scaling up */
+            align-items: flex-start;
             justify-content: center;
+            /* small top/bottom padding so scrolling isn't flush to edges */
+            padding: 20px 0 40px;
         }
 
         /* --- THE SCALING CONTAINER --- 
@@ -32,7 +36,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transform-origin: center center;
+            /* scale from the top so the title stays visible when page grows */
+            transform-origin: top center;
         }
 
         /* --- BACKGROUND CANVAS --- 
@@ -69,17 +74,6 @@
             white-space: nowrap;
         }
 
-        .subtitle {
-            color: #123275;
-            font-size: 1.5rem;
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 8px 30px;
-            border-radius: 30px;
-            border: 1px solid #e0e0e0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
         /* --- ORGANIC GRID --- */
         .bingo-grid {
             position: absolute;
@@ -110,6 +104,14 @@
             font-weight: bold;
             cursor: pointer;
             transition: transform 0.15s ease, background 0.15s ease;
+            /* ensure pseudo-element anchors to the cell so it scales uniformly */
+            position: relative;
+            /* cross-browser no-select */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -webkit-user-select: none;
+            -webkit-user-select: none;
             user-select: none;
             box-shadow: 2px 2px 4px rgba(26, 69, 160, 0.15);
             /* Initial organic radius - JS adds variety */
@@ -198,6 +200,94 @@
         .tab-content { display: block; }
         .hidden { display: none !important; }
 
+        /* Centered content that aligns with the decorative square (matches CONFIG.squareSize) */
+        .centered-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            width: 600px; /* matches CONFIG.squareSize */
+            max-width: 90%;
+            box-sizing: border-box;
+            pointer-events: auto;
+        }
+
+        /* counter-scale prevents the pubs text from inheriting the global app scale */
+        .counter-scale {
+            transform-origin: top center;
+        }
+
+        /* Pub checkbox — small variant of bingo cell */
+        /* make each list item a clear row with spacing and centered checkbox */
+        #pubsList { list-style: none; padding: 0; margin: 0; }
+        .pub-row {
+            display: flex;
+            align-items: center;        /* center checkbox next to multi-line text */
+            justify-content: space-between;
+            padding: 10px 12px;        /* spacing inside each row */
+            margin-bottom: 10px;       /* space between rows */
+            border-radius: 12px;
+            background: rgba(255,255,255,0.98);
+            box-shadow: 0 2px 6px rgba(17,35,90,0.02);
+        }
+        /* replaced flex gap with explicit label margin for Safari compatibility */
+        .pub-label {
+            flex: 1 1 auto;
+            margin: 0;
+            margin-right: 14px;
+            line-height: 1.35;
+            word-break: break-word;
+        }
+        .pub-checkbox {
+            flex: 0 0 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.95);
+            border: 1.5px solid #1a45a0;
+            color: #1a45a0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 2px 2px 4px rgba(26,69,160,0.12);
+            transition: transform 0.12s ease, background 0.12s;
+
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .pub-checkbox.checked {
+            background: #1a45a0;
+            color: white;
+            border-color: #123275;
+            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.25);
+        }
+        .pub-checkbox::after {
+            content: "✓";
+            position: absolute;
+            font-size: 1.1rem;
+            opacity: 0;
+            transition: opacity 0.12s;
+        }
+        .pub-checkbox.checked::after { opacity: 1; color: rgba(255,255,255,0.95); }
+ 
+        /* Ensure the pubs panel fits inside the decorative square and scrolls if needed */
+        .pubs-panel {
+            width: 100%;
+            max-height: 560px; /* leave a small gutter inside the 600px square */
+            overflow: auto;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.95);
+            padding: 18px;
+            border-radius: 18px;
+            border: 1px solid #e6e9ff;
+            box-shadow: 0 6px 14px rgba(17,35,90,0.06);
+        }
+ 
     </style>
 </head>
 <body>
@@ -211,10 +301,9 @@
     <!-- Headers -->
     <div class="header-group">
         <h1>Anne's Birthday</h1>
-        <div class="subtitle">Pub Crawl Bingo</div>
         <div class="tabs">
-            <button class="tab-btn active" data-tab="bingo" onclick="showTab('bingo')">Pub Crawl Bingo</button>
-            <button class="tab-btn" data-tab="pubs" onclick="showTab('pubs')">12 Pubs of Christmas</button>
+            <button class="tab-btn active"  data-tab="pubs" onclick="showTab('pubs')">12 Pubs of Christmas</button> 
+            <button class="tab-btn " data-tab="bingo" onclick="showTab('bingo')">Pub Crawl Bingo</button>
         </div>
     </div>
     
@@ -230,30 +319,33 @@
     </div>
 
     <!-- Tabbed Content: 12 Pubs of Christmas -->
-    <div id="pubsContent" class="tab-content hidden" style="z-index:2;">
-        <div class="pubs-panel" style="width:640px; max-width:90%; margin: 20px auto; background: rgba(255,255,255,0.95); padding:18px; border-radius:18px; border:1px solid #e6e9ff; box-shadow: 0 6px 14px rgba(17,35,90,0.06);">
-            <h2 style="margin-top:0;color:#1a45a0;">12 Pubs of Christmas — Nick Miller edition</h2>
-            <p><strong>Overall rule:</strong> Respect the crawl. Any disrespect and you drink. When someone says '29' (The Schmidt way), everyone must drink.</p>
-            <p><strong>START:</strong> 3.30pm</p>
+    <div id="pubsContent" class="tab-content hidden">
+        <!-- centered-content is counter-scaled so it keeps readable width regardless of zoom -->
+        <div class="centered-content counter-scale">
+            <div class="pubs-panel" id="pubsPanel">
+                <h2 style="margin-top:0;color:#1a45a0;">12 Pubs of Christmas — Nick Miller edition</h2>
+                <p><strong>Overall rule:</strong> Respect the crawl. Any disrespect and you drink. When someone says '29' (The Schmidt way), everyone must drink.</p>
+                <p><strong>START:</strong> 3.30pm</p>
 
-            <ol>
-                <li><strong>Pub 1:</strong> 67A Tabley Road — <em>The Oracle</em>: Abs becomes the Oracle and must make predictions about the rest of the night. If anyone challenges the Oracle, they must take a sip.</li>
-                <li><strong>Pub 2:</strong> The Prince Edward, 38 Parkhurst Rd, London N7 0SF — <em>Nick Miller cheapskate rule</em>: Everyone must buy the cheapest drink on the menu. If you fail to do so, or try to upgrade, you have to tell the group a secret you’ve never shared before.</li>
-                <li><strong>Pub 3:</strong> The Crown, 622 Holloway Rd, Archway, London N19 3PA — <em>The crawl doesn’t wait rule</em>: Once one person finishes their drink, we must move to the next pub within 2 minutes.</li>
-                <li><strong>Pub 4:</strong> The Landseer Arms, 37 Landseer Rd, London N19 4JU — <em>The Schmidt sentimental rule</em>: Before your first sip, everyone must say one sincere, borderline dramatic compliment about me. If it’s too vague, you have to finish your drink.</li>
-                <li><strong>Pub 5:</strong> The Swimmer at the Grafton Arms, 13 Eburne Rd, London N7 6AR — <em>The guide rule</em>: Diana must lead the group with blind confidence and 0 navigation skills to this pub. If we get lost, everyone drinks.</li>
-                <li><strong>BUS BREAK</strong> aka <em>BUZZBALL BREAK</em></li>
-                <li><strong>Pub 6:</strong> The Red Lion, 132 Stoke Newington Church St, London N16 0JX — <em>The crawl demands a sacrifice rule</em>: Each person must give up one thing for the pub i.e. no drinking with your dominant hand, no straw, no smiling. If you break your rule, you have to take a sip.</li>
-                <li><strong>Pub 7:</strong> The Auld Shillelagh, 105 Stoke Newington Church St, London N16 0UD — <em>The Cece and Jess rage rule</em>: Only drinks over 20% allowed and you must say one mildly unhinged sentence about an ex, situationship or work injustice.</li>
-                <li><strong>Pub 8:</strong> Three Crowns, 175 Stoke Newington High St, London N16 0LH — <em>The Nick Miller spiral rule</em>: Everyone must share a wildly disproportionate worry, and it has to be over something tiny. If it’s actually reasonable, you must drink.</li>
-                <li><strong>Pub 9:</strong> The Coach & Horses, 178 Stoke Newington High St, London N16 7JL — <em>The Schmidt confidence rule</em>: Everyone must refer to themselves in the 3rd person.</li>
-                <li><strong>Pub 10:</strong> The Rochester Castle, 143-145 Stoke Newington High St, London N16 0NY — <em>The Nick Miller zombie novel rule</em>: Everyone must share a personal dream they once abandoned.</li>
-                <li><strong>Pub 11:</strong> The White Hart, 69 Stoke Newington High St, London N16 8EL — <em>The Tilly is Winston rule</em>: She must declare a completely pointless, overly intense challenge for the pub. Everyone has to commit; if you refuse or break the rule, you have to finish your drink.</li>
-                <li><strong>Pub 12:</strong> Yucatan Bar, 121 Stoke Newington Rd, London N16 8BT — <em>The respect the crawl finale rule</em>: Everyone...</li>
-            </ol>
+                <ol id="pubsList">
+                    <li><strong>Pub 1:</strong> 67A Tabley Road — <em>The Oracle</em>: Abs becomes the Oracle and must make predictions about the rest of the night. If anyone challenges the Oracle, they must take a sip.</li>
+                    <li><strong>Pub 2:</strong> The Prince Edward, 38 Parkhurst Rd, London N7 0SF — <em>Nick Miller cheapskate rule</em>: Everyone must buy the cheapest drink on the menu. If you fail to do so, or try to upgrade, you have to tell the group a secret you’ve never shared before.</li>
+                    <li><strong>Pub 3:</strong> The Crown, 622 Holloway Rd, Archway, London N19 3PA — <em>The crawl doesn’t wait rule</em>: Once one person finishes their drink, we must move to the next pub within 2 minutes.</li>
+                    <li><strong>Pub 4:</strong> The Landseer Arms, 37 Landseer Rd, London N19 4JU — <em>The Schmidt sentimental rule</em>: Before your first sip, everyone must say one sincere, borderline dramatic compliment about me. If it’s too vague, you have to finish your drink.</li>
+                    <li><strong>Pub 5:</strong> The Swimmer at the Grafton Arms, 13 Eburne Rd, London N7 6AR — <em>The guide rule</em>: Diana must lead the group with blind confidence and 0 navigation skills to this pub. If we get lost, everyone drinks.</li>
+                    <li><strong>BUS BREAK</strong> aka <em>BUZZBALL BREAK</em></li>
+                    <li><strong>Pub 6:</strong> The Red Lion, 132 Stoke Newington Church St, London N16 0JX — <em>The crawl demands a sacrifice rule</em>: Each person must give up one thing for the pub i.e. no drinking with your dominant hand, no straw, no smiling. If you break your rule, you have to take a sip.</li>
+                    <li><strong>Pub 7:</strong> The Auld Shillelagh, 105 Stoke Newington Church St, London N16 0UD — <em>The Cece and Jess rage rule</em>: Only drinks over 20% allowed and you must say one mildly unhinged sentence about an ex, situationship or work injustice.</li>
+                    <li><strong>Pub 8:</strong> Three Crowns, 175 Stoke Newington High St, London N16 0LH — <em>The Nick Miller spiral rule</em>: Everyone must share a wildly disproportionate worry, and it has to be over something tiny. If it’s actually reasonable, you must drink.</li>
+                    <li><strong>Pub 9:</strong> The Coach & Horses, 178 Stoke Newington High St, London N16 7JL — <em>The Schmidt confidence rule</em>: Everyone must refer to themselves in the 3rd person.</li>
+                    <li><strong>Pub 10:</strong> The Rochester Castle, 143-145 Stoke Newington High St, London N16 0NY — <em>The Nick Miller zombie novel rule</em>: Everyone must share a personal dream they once abandoned.</li>
+                    <li><strong>Pub 11:</strong> The White Hart, 69 Stoke Newington High St, London N16 8EL — <em>The Tilly is Winston rule</em>: She must declare a completely pointless, overly intense challenge for the pub. Everyone has to commit; if you refuse or break the rule, you have to finish your drink.</li>
+                    <li><strong>Pub 12:</strong> Yucatan Bar, 121 Stoke Newington Rd, London N16 8BT — <em>The respect the crawl finale rule</em>: Everyone...</li>
+                </ol>
 
-            <div style="text-align:right;margin-top:12px;">
-                <button class="reset-btn" onclick="showTab('bingo')">Back to Bingo</button>
+                <div style="text-align:right;margin-top:12px;">
+                    <button class="reset-btn" onclick="showTab('bingo')">Back to Bingo</button>
+                </div>
             </div>
         </div>
     </div>
@@ -265,6 +357,7 @@
        SCALING LOGIC
        ----------------------------------------------------------- */
     const container = document.getElementById('main-container');
+    const counterElements = document.querySelectorAll('.counter-scale');
     
     function resizeApp() {
         const windowWidth = window.innerWidth;
@@ -277,11 +370,26 @@
         const scaleY = (windowHeight - 20) / targetHeight;
         const scale = Math.min(scaleX, scaleY); // Fit to smallest dimension
 
-        container.style.transform = `scale(${scale})`;
+        // set both standard and webkit transform for Safari compatibility
+        const scaleStr = `scale(${scale})`;
+        container.style.transform = scaleStr;
+        container.style.webkitTransform = scaleStr;
+
+        // Apply inverse scale to elements that should remain readable/constant width
+        const inv = isFinite(scale) && scale > 0 ? (1 / scale) : 1;
+        // NodeList may not support forEach in older Safari; use a simple loop
+        for (let i = 0; i < counterElements.length; i++) {
+            const el = counterElements[i];
+            const t = `translate(-50%, -50%) scale(${inv})`;
+            el.style.transform = t;
+            el.style.webkitTransform = t;
+        }
     }
 
     window.addEventListener('resize', resizeApp);
     resizeApp(); // Trigger immediately
+    // ensure inverse scale also applied after initial layout (fonts may change)
+    window.addEventListener('load', resizeApp);
 
     // Tab switching for additional pages
     function showTab(name) {
@@ -390,9 +498,69 @@
 
     initGrid();
     // Ensure the default tab is visible on load
-    if (typeof showTab === 'function') showTab('bingo');
+    if (typeof showTab === 'function') showTab('pubs');
 
+    /* -----------------------------------------------------------
+       PUBS CHECKBOXES + PERSISTENCE
+       ----------------------------------------------------------- */
+    const PUBS_STORAGE_KEY = 'anne_pubs_state_v1';
 
+    function loadPubsState(count) {
+        const saved = localStorage.getItem(PUBS_STORAGE_KEY);
+        if (saved) {
+            try { const parsed = JSON.parse(saved); if (Array.isArray(parsed)) return parsed; } catch(e){}
+        }
+        return new Array(count).fill(false);
+    }
+
+    function savePubsState(state) {
+        localStorage.setItem(PUBS_STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function initPubsCheckboxes() {
+        const ol = document.getElementById('pubsList');
+        if (!ol) return;
+        const items = Array.from(ol.querySelectorAll('li'));
+        const state = loadPubsState(items.length);
+
+        items.forEach((li, idx) => {
+            // wrap content in flex row and append checkbox
+            const text = document.createElement('div');
+            text.className = 'pub-label';
+            // keep the existing innerHTML as label
+            text.innerHTML = li.innerHTML;
+
+            const checkbox = document.createElement('button');
+            checkbox.type = 'button';
+            checkbox.className = 'pub-checkbox';
+            checkbox.setAttribute('aria-pressed', state[idx] ? 'true' : 'false');
+            checkbox.dataset.index = idx;
+
+            if (state[idx]) checkbox.classList.add('checked');
+
+            checkbox.onclick = () => {
+                const s = loadPubsState(items.length);
+                s[idx] = !s[idx];
+                savePubsState(s);
+                checkbox.classList.toggle('checked', s[idx]);
+                checkbox.setAttribute('aria-pressed', s[idx] ? 'true' : 'false');
+            };
+
+            // replace li content with structured row
+            li.innerHTML = '';
+            li.classList.add('pub-row');
+            li.appendChild(text);
+            li.appendChild(checkbox);
+        });
+    }
+
+    // Initialize pubs checkboxes once DOM is ready
+    document.addEventListener('DOMContentLoaded', initPubsCheckboxes);
+    // In case script runs after DOMContentLoaded
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        initPubsCheckboxes();
+    }
+ 
     /* -----------------------------------------------------------
        BACKGROUND PATTERN GENERATOR
        ----------------------------------------------------------- */
@@ -406,7 +574,8 @@
         detailColor: '#123275',
         flowerColor: '#2b5bbd', 
         lineWidth: 0.6, 
-        sheetSize: 3000,
+        // Align sheet to the app base resolution so the canvas visuals scale exactly with the container
+        sheetSize: 1000,
         squareSize: 600, 
         sway: 60,
         layoutSeed: 111,
@@ -431,7 +600,7 @@
         // Cap DPR at 2 to avoid creating excessively large canvases on super-high-res devices
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
         
-        // Logical Dimensions
+        // Logical Dimensions (match app base so CSS transform scales everything uniformly)
         width = CONFIG.sheetSize;
         height = CONFIG.sheetSize;
         
@@ -439,11 +608,12 @@
         canvas.width = width * dpr;
         canvas.height = height * dpr;
         
-        // Set display size (css)
+        // Set display size (css) to the logical sheet size (matches #main-container base)
         canvas.style.width = `${width}px`;
         canvas.style.height = `${height}px`;
         
-        // Scale drawing context to match
+        // Reset any previous transform to avoid cumulative scaling, then scale for DPR
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.scale(dpr, dpr);
         
         _seed = CONFIG.layoutSeed;
@@ -739,7 +909,8 @@
         const dy = y2 - y1;
         const dist = Math.sqrt(dx*dx + dy*dy);
         const midX = (x1 + x2) / 2;
-        const midY = (x1 + y2) / 2;
+        // fixed: midY should be average of y1 and y2
+        const midY = (y1 + y2) / 2;
 
         let perpX = -dy / dist;
         let perpY = dx / dist;
@@ -835,6 +1006,21 @@
 
     // Start
     requestAnimationFrame(initSheet);
+
+    // Polyfill for ctx.ellipse in older Safari
+    if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.ellipse) {
+        CanvasRenderingContext2D.prototype.ellipse = function(cx, cy, rx, ry, rotation, startAngle, endAngle, anticlockwise) {
+            // save/translate/scale approach
+            this.save();
+            this.translate(cx, cy);
+            this.rotate(rotation || 0);
+            this.scale(rx, ry);
+            this.beginPath();
+            // draw unit circle arc then restore
+            this.arc(0, 0, 1, startAngle, endAngle, anticlockwise || false);
+            this.restore();
+        };
+    }
 
 </script>
 </body>
