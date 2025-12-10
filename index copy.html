@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pub Bingo Tracker!</title>
+    <style>
+        /* CSS will go here */
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        /* --- TOP SECTION --- */
+        #header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #2c3e50;
+            color: white;
+            border-radius: 8px;
+        }
+        #info {
+            font-size: 0.9em;
+            margin-top: 10px;
+            color: #bdc3c7;
+        }
+
+        /* --- MIDDLE SECTION (GRID) --- */
+        #bingo-grid-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        #bingo-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(7, 1fr);
+            width: 90vw; 
+            max-width: 700px;
+            aspect-ratio: 1 / 1; 
+            border: 5px solid #e74c3c;
+        }
+        .grid-cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: center;
+            cursor: pointer;
+            font-size: clamp(0.6rem, 1.5vw, 1rem);
+            background-color: white;
+            transition: background-color 0.1s ease;
+        }
+        .grid-cell.highlighted {
+            background-color: #2ecc71; /* Green highlight */
+            color: white;
+            border-color: #27ae60;
+        }
+
+        /* --- BOTTOM SECTION --- */
+        #footer {
+            display: flex;
+            flex-direction: column; /* Stack buttons and counter vertically on mobile */
+            gap: 10px; /* Space between elements */
+            padding: 15px;
+            border-top: 2px solid #ddd;
+            background-color: white;
+            border-radius: 8px;
+        }
+
+        #controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #counter {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .control-button {
+            padding: 10px 15px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        #clear-button {
+            background-color: #e74c3c; /* Red */
+        }
+        #clear-button:hover {
+            background-color: #c0392b;
+        }
+        #whatsapp-button {
+            background-color: #25d366; /* WhatsApp Green */
+        }
+        #whatsapp-button:hover {
+            background-color: #128c7e;
+        }
+        
+        /* Optional: Hide buttons when printing/sharing to clean up the image */
+        @media print {
+            #footer, #header {
+                display: none;
+            }
+            #bingo-grid {
+                border-color: #333; /* Dark border for printing */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="header">
+        <h1>🍻 Pub Bingo Tracker 🍻</h1>
+        <p id="info">Click the squares below when the action happens! Your progress is saved automatically.</p>
+    </div>
+
+    <div id="bingo-grid-container">
+        <div id="bingo-grid">
+            </div>
+    </div>
+
+    <div id="footer">
+        <div id="counter">Highlighted Cells: 0</div>
+        <div id="controls">
+            <button id="clear-button" class="control-button">🗑️ Clear All</button>
+
+        </div>
+    </div>
+
+    <script>
+        const GRID_SIZE = 7;
+        const GRID_KEY = 'bingoGridState';
+        
+        // --- Placeholder actions for the 7x7 grid (49 items) ---
+        const ACTIONS = [
+            "Someone orders a pint of lager", "Hear a bad joke", "Someone mentions the weather",
+            "A phone rings loudly", "Spot a dog", "Someone spills a drink",
+            "Order a round of shots", "Hear a sports score yelled", "Jukebox plays a 80s song",
+            "Someone orders a gin and tonic", "Spot someone wearing sunglasses indoors", "A chair scrapes loudly",
+            "See a couple arguing", "A person orders food", "Hear a baby crying",
+            "Someone tries to get service with a wave", "Find a sticky table", "Someone wears a team jersey",
+            "Order a non-alcoholic drink", "Someone asks 'What time is it?'", "See a celebrity look-alike",
+            "Hear a song by The Beatles", "Spot an umbrella indoors", "Someone pays with cash",
+            "Someone orders a glass of wine", "See someone reading a physical book", "Hear a reference to a TV show",
+            "Spot a dartboard", "Someone takes a photo/selfie", "A glass breaks",
+            "Someone orders a spirit with mixer", "See a person wearing a hat indoors", "Hear someone laugh loudly",
+            "FREE SPACE: Take a sip of your drink!", "Someone leaves a tip", "Spot a lost item",
+            "Someone says 'Cheers!'", "A bartender cleans a glass", "See an empty glass left on the bar",
+            "Someone mentions work", "Hear a political discussion", "Spot someone scrolling endlessly",
+            "Someone orders water", "A group plays pool", "Hear a dramatic sigh",
+            "See someone checking their phone repeatedly", "The bartender makes eye contact", "A friend goes to the toilet"
+        ];
+        
+        // --- 1. LOCAL STORAGE & STATE ---
+        function getGridState() {
+            const stateString = localStorage.getItem(GRID_KEY);
+            return stateString ? JSON.parse(stateString) : new Array(GRID_SIZE * GRID_SIZE).fill(false);
+        }
+
+        function saveGridState(stateArray) {
+            localStorage.setItem(GRID_KEY, JSON.stringify(stateArray));
+        }
+
+        let currentGridState = getGridState();
+
+        // --- 2. GRID RENDERING & INTERACTIVITY ---
+        function renderGrid() {
+            const gridElement = document.getElementById('bingo-grid');
+            gridElement.innerHTML = '';
+
+            for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('grid-cell');
+                cell.setAttribute('data-index', i);
+                cell.textContent = ACTIONS[i];
+
+                if (currentGridState[i]) {
+                    cell.classList.add('highlighted');
+                }
+
+                cell.addEventListener('click', toggleCell);
+                gridElement.appendChild(cell);
+            }
+            updateCounter();
+        }
+        
+        function toggleCell(event) {
+            const cell = event.currentTarget;
+            const index = parseInt(cell.getAttribute('data-index'));
+
+            cell.classList.toggle('highlighted');
+
+            currentGridState[index] = cell.classList.contains('highlighted');
+            
+            saveGridState(currentGridState);
+            
+            updateCounter();
+        }
+
+        // --- 3. COUNTER & CONTROL FUNCTIONS ---
+
+        function updateCounter() {
+            const highlightedCount = currentGridState.filter(Boolean).length;
+            document.getElementById('counter').textContent = `Highlighted Cells: ${highlightedCount}`;
+        }
+
+        /**
+         * Clears all highlighted cells and resets local storage.
+         */
+        function clearAll() {
+            if (confirm("Are you sure you want to clear the entire grid? This cannot be undone.")) {
+                currentGridState.fill(false); 
+                localStorage.removeItem(GRID_KEY);
+                renderGrid(); // Re-render to update the display
+                alert("Grid and local data cleared!");
+            }
+        }
+        
+
+
+        // --- 4. INITIALIZATION ---
+
+
+        // Attach event listener to the clear button only
+        document.getElementById('clear-button').addEventListener('click', clearAll);
+
+        // Load the state and render the grid when the page loads
+        document.addEventListener('DOMContentLoaded', renderGrid);
+
+    </script>
+</body>
+</html>
