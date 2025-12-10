@@ -180,6 +180,24 @@
             box-shadow: 0 6px 8px rgba(0,0,0,0.15);
         }
 
+        /* Tabs */
+        .tabs { margin-top: 12px; display:inline-block; }
+        .tab-btn {
+            background: rgba(255,255,255,0.95);
+            border: 1px solid #dfe8ff;
+            color: #123275;
+            padding: 8px 14px;
+            margin: 0 6px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(17,35,90,0.04);
+        }
+        .tab-btn.active { background: #1a45a0; color: white; border-color: #123275; }
+
+        .tab-content { display: block; }
+        .hidden { display: none !important; }
+
     </style>
 </head>
 <body>
@@ -194,14 +212,50 @@
     <div class="header-group">
         <h1>Anne's Birthday</h1>
         <div class="subtitle">Pub Crawl Bingo</div>
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="bingo" onclick="showTab('bingo')">Pub Crawl Bingo</button>
+            <button class="tab-btn" data-tab="pubs" onclick="showTab('pubs')">12 Pubs of Christmas</button>
+        </div>
     </div>
     
-    <!-- Grid -->
-    <div class="bingo-grid" id="grid"></div>
+    <!-- Tabbed Content: Bingo (default) -->
+    <div id="bingoContent" class="tab-content">
+        <!-- Grid -->
+        <div class="bingo-grid" id="grid"></div>
 
-    <!-- Controls -->
-    <div class="controls">
-        <button class="reset-btn" onclick="resetBingo()">Reset Board</button>
+        <!-- Controls -->
+        <div class="controls">
+            <button class="reset-btn" onclick="resetBingo()">Reset Board</button>
+        </div>
+    </div>
+
+    <!-- Tabbed Content: 12 Pubs of Christmas -->
+    <div id="pubsContent" class="tab-content hidden" style="z-index:2;">
+        <div class="pubs-panel" style="width:640px; max-width:90%; margin: 20px auto; background: rgba(255,255,255,0.95); padding:18px; border-radius:18px; border:1px solid #e6e9ff; box-shadow: 0 6px 14px rgba(17,35,90,0.06);">
+            <h2 style="margin-top:0;color:#1a45a0;">12 Pubs of Christmas — Nick Miller edition</h2>
+            <p><strong>Overall rule:</strong> Respect the crawl. Any disrespect and you drink. When someone says '29' (The Schmidt way), everyone must drink.</p>
+            <p><strong>START:</strong> 3.30pm</p>
+
+            <ol>
+                <li><strong>Pub 1:</strong> 67A Tabley Road — <em>The Oracle</em>: Abs becomes the Oracle and must make predictions about the rest of the night. If anyone challenges the Oracle, they must take a sip.</li>
+                <li><strong>Pub 2:</strong> The Prince Edward, 38 Parkhurst Rd, London N7 0SF — <em>Nick Miller cheapskate rule</em>: Everyone must buy the cheapest drink on the menu. If you fail to do so, or try to upgrade, you have to tell the group a secret you’ve never shared before.</li>
+                <li><strong>Pub 3:</strong> The Crown, 622 Holloway Rd, Archway, London N19 3PA — <em>The crawl doesn’t wait rule</em>: Once one person finishes their drink, we must move to the next pub within 2 minutes.</li>
+                <li><strong>Pub 4:</strong> The Landseer Arms, 37 Landseer Rd, London N19 4JU — <em>The Schmidt sentimental rule</em>: Before your first sip, everyone must say one sincere, borderline dramatic compliment about me. If it’s too vague, you have to finish your drink.</li>
+                <li><strong>Pub 5:</strong> The Swimmer at the Grafton Arms, 13 Eburne Rd, London N7 6AR — <em>The guide rule</em>: Diana must lead the group with blind confidence and 0 navigation skills to this pub. If we get lost, everyone drinks.</li>
+                <li><strong>BUS BREAK</strong> aka <em>BUZZBALL BREAK</em></li>
+                <li><strong>Pub 6:</strong> The Red Lion, 132 Stoke Newington Church St, London N16 0JX — <em>The crawl demands a sacrifice rule</em>: Each person must give up one thing for the pub i.e. no drinking with your dominant hand, no straw, no smiling. If you break your rule, you have to take a sip.</li>
+                <li><strong>Pub 7:</strong> The Auld Shillelagh, 105 Stoke Newington Church St, London N16 0UD — <em>The Cece and Jess rage rule</em>: Only drinks over 20% allowed and you must say one mildly unhinged sentence about an ex, situationship or work injustice.</li>
+                <li><strong>Pub 8:</strong> Three Crowns, 175 Stoke Newington High St, London N16 0LH — <em>The Nick Miller spiral rule</em>: Everyone must share a wildly disproportionate worry, and it has to be over something tiny. If it’s actually reasonable, you must drink.</li>
+                <li><strong>Pub 9:</strong> The Coach & Horses, 178 Stoke Newington High St, London N16 7JL — <em>The Schmidt confidence rule</em>: Everyone must refer to themselves in the 3rd person.</li>
+                <li><strong>Pub 10:</strong> The Rochester Castle, 143-145 Stoke Newington High St, London N16 0NY — <em>The Nick Miller zombie novel rule</em>: Everyone must share a personal dream they once abandoned.</li>
+                <li><strong>Pub 11:</strong> The White Hart, 69 Stoke Newington High St, London N16 8EL — <em>The Tilly is Winston rule</em>: She must declare a completely pointless, overly intense challenge for the pub. Everyone has to commit; if you refuse or break the rule, you have to finish your drink.</li>
+                <li><strong>Pub 12:</strong> Yucatan Bar, 121 Stoke Newington Rd, London N16 8BT — <em>The respect the crawl finale rule</em>: Everyone...</li>
+            </ol>
+
+            <div style="text-align:right;margin-top:12px;">
+                <button class="reset-btn" onclick="showTab('bingo')">Back to Bingo</button>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -228,6 +282,24 @@
 
     window.addEventListener('resize', resizeApp);
     resizeApp(); // Trigger immediately
+
+    // Tab switching for additional pages
+    function showTab(name) {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === name);
+        });
+
+        const bingoEl = document.getElementById('bingoContent');
+        const pubsEl = document.getElementById('pubsContent');
+
+        if (name === 'bingo') {
+            if (bingoEl) bingoEl.classList.remove('hidden');
+            if (pubsEl) pubsEl.classList.add('hidden');
+        } else if (name === 'pubs') {
+            if (pubsEl) pubsEl.classList.remove('hidden');
+            if (bingoEl) bingoEl.classList.add('hidden');
+        }
+    }
 
 
     /* -----------------------------------------------------------
@@ -317,6 +389,8 @@
     }
 
     initGrid();
+    // Ensure the default tab is visible on load
+    if (typeof showTab === 'function') showTab('bingo');
 
 
     /* -----------------------------------------------------------
