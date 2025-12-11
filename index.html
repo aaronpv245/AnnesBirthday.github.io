@@ -312,12 +312,12 @@
  
         /* Ensure the pubs panel fits inside the decorative square and scrolls if needed */
         .pubs-panel {
-            width: 100%;
-            max-height: 560px; /* leave a small gutter inside the 600px square */
+            width: 460px; /* match bingo grid size */
+            height: 460px; /* fixed size to match grid regardless of zoom */
             overflow: auto;
             margin: 0 auto;
             background: rgba(255,255,255,0.95);
-            padding: 18px;
+            padding: 20px;
             border-radius: 18px;
             border: 1px solid #e6e9ff;
             box-shadow: 0 6px 14px rgba(17,35,90,0.06);
@@ -355,7 +355,7 @@
 
     <!-- Tabbed Content: 12 Pubs of Christmas -->
     <div id="pubsContent" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-pubs">
-        <!-- centered-content is counter-scaled so it keeps readable width regardless of zoom -->
+        <!-- centered-content is counter-scaled so it keeps centered position regardless of zoom -->
         <div class="centered-content counter-scale">
             <div class="pubs-panel" id="pubsPanel">
                 <h2 class="pubs-title">12 Pubs of Christmas — Nick Miller edition</h2>
