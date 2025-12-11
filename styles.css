@@ -1,0 +1,170 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
+    font-family: 'Playfair Display', serif;
+    overflow: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px 0 40px;
+}
+
+.pubs-title { margin-top: 0; color: #1a45a0; }
+
+#main-container {
+    position: relative;
+    width: 1000px;
+    height: 1000px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-origin: top center;
+}
+
+canvas {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.header-group {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+}
+
+h1 {
+    color: #1a45a0;
+    font-size: 4rem;
+    margin: 0 0 12px 0;
+    text-shadow: 3px 3px 0px #fff, -1px -1px 0 #fff;
+    font-style: italic;
+    white-space: nowrap;
+}
+
+.tabs {
+    display: flex;
+    gap: 12px;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.bingo-grid {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    width: 460px;
+    height: 460px;
+}
+
+.bingo-cell {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1.5px solid #1a45a0;
+    color: #1a45a0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2px;
+    font-size: 0.7rem;
+    line-height: 1.1;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+    position: relative;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    box-shadow: 2px 2px 4px rgba(26, 69, 160, 0.15);
+    border-radius: 15px;
+}
+
+.bingo-cell:hover {
+    transform: scale(1.15);
+    background: #fff;
+    z-index: 10;
+    border-color: #123275;
+    box-shadow: 4px 4px 8px rgba(26, 69, 160, 0.25);
+}
+
+.bingo-cell.checked { background-color: #1a45a0; color: white; border-color: #123275; box-shadow: inset 1px 1px 3px rgba(0,0,0,0.3); }
+.bingo-cell.checked::after { content: "✓"; position: absolute; font-size: 1.8rem; color: rgba(255,255,255,0.5); top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); }
+.bingo-cell.center-cell { font-size: 0.85rem; }
+
+.controls {
+    position: absolute;
+    top: 50%;
+    margin-top: 400px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 2;
+    width: 100%;
+}
+
+button.reset-btn {
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid #1a45a0;
+    color: #1a45a0;
+    padding: 12px 35px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+button.reset-btn:hover { background: #1a45a0; color: white; transform: translateY(-2px); box-shadow: 0 6px 8px rgba(0,0,0,0.15); }
+
+.tab-btn { background: rgba(255,255,255,0.95); border: 1px solid #dfe8ff; color: #123275; padding: 8px 14px; border-radius: 999px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(17,35,90,0.04); white-space: nowrap; flex-shrink: 0; }
+.tab-btn.active { background: #1a45a0; color: white; border-color: #123275; }
+.tab-content { display: block; }
+.hidden { display: none !important; }
+
+.centered-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; width: 600px; max-width: 90%; box-sizing: border-box; pointer-events: auto; margin-top: -110px; }
+.counter-scale { transform-origin: top center; }
+
+#pubsList { list-style: none; padding: 0; margin: 0; }
+.pub-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; margin-bottom: 10px; border-radius: 12px; background: rgba(255,255,255,0.98); box-shadow: 0 2px 6px rgba(17,35,90,0.02); }
+.pub-label { flex: 1 1 auto; margin: 0; margin-right: 14px; line-height: 1.35; word-break: break-word; }
+.pub-checkbox { flex: 0 0 46px; height: 46px; border-radius: 12px; background: rgba(255,255,255,0.95); border: 1.5px solid #1a45a0; color: #1a45a0; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; position: relative; box-shadow: 2px 2px 4px rgba(26,69,160,0.12); transition: transform 0.12s ease, background 0.12s; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+.pub-checkbox.checked { background: #1a45a0; color: white; border-color: #123275; box-shadow: inset 1px 1px 3px rgba(0,0,0,0.25); }
+.pub-checkbox::after { content: "✓"; position: absolute; font-size: 1.1rem; opacity: 0; transition: opacity 0.12s; }
+.pub-checkbox.checked::after { opacity: 1; color: rgba(255,255,255,0.95); }
+
+.pubs-panel { width: 368px; height: 368px; overflow: auto; margin: 0 auto; background: rgba(255,255,255,0.95); padding: 20px; border-radius: 18px; border: 1px solid #e6e9ff; box-shadow: 0 6px 14px rgba(17,35,90,0.06); box-sizing: border-box; }
+
+.welcome-banner { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.97); color: #1a45a0; padding: 50px 60px; text-align: center; z-index: 1000; box-shadow: 0 8px 32px rgba(26, 69, 160, 0.25); border: 2px solid #1a45a0; border-radius: 20px; font-family: 'Playfair Display', serif; max-width: 600px; width: 90%; }
+.welcome-banner::before, .welcome-banner::after { content: ""; position: absolute; font-size: 3rem; opacity: 0.7; top: 20px; }
+.welcome-banner::before { left: 20px; }
+.welcome-banner::after { right: 20px; }
+.welcome-banner h2 { margin: 0 0 15px 0; font-size: 2.5rem; font-style: italic; font-weight: 700; letter-spacing: 1px; }
+.welcome-banner p { margin: 0 0 25px 0; font-size: 0.95rem; font-weight: 400; letter-spacing: 0.5px; line-height: 1.4; }
+.welcome-banner button { background: #1a45a0; color: white; border: 2px solid #1a45a0; padding: 12px 40px; border-radius: 999px; cursor: pointer; font-weight: bold; font-family: 'Playfair Display', serif; font-size: 1.1rem; transition: all 0.3s; box-shadow: 0 4px 10px rgba(26, 69, 160, 0.2); }
+.welcome-banner button:hover { background: white; color: #1a45a0; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(26, 69, 160, 0.3); }
+.welcome-banner.hidden { display: none; }
+
+#main-container.banner-active { filter: blur(5px); pointer-events: none; }
+.header-group.banner-active { filter: blur(5px); pointer-events: none; }
