@@ -84,17 +84,28 @@
             top: 30px; 
             left: 50%;
             transform: translateX(-50%);
-            width: 100%;
-            text-align: center;
+            width: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             z-index: 2;
         }
 
         h1 {
             color: #1a45a0;
             font-size: 4rem;
-            margin: 0 0 5px 0; /* Reduced margin to pull subtitle up closer */
+            margin: 0 0 12px 0; /* Spacing below title */
             text-shadow: 3px 3px 0px #fff, -1px -1px 0 #fff;
             font-style: italic;
+            white-space: nowrap;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
             white-space: nowrap;
         }
 
@@ -207,17 +218,17 @@
         }
 
         /* Tabs */
-        .tabs { margin-top: 12px; display:inline-block; }
         .tab-btn {
             background: rgba(255,255,255,0.95);
             border: 1px solid #dfe8ff;
             color: #123275;
             padding: 8px 14px;
-            margin: 0 6px;
             border-radius: 999px;
             cursor: pointer;
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(17,35,90,0.04);
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         .tab-btn.active { background: #1a45a0; color: white; border-color: #123275; }
 
@@ -317,33 +328,33 @@
 <body>
 
 <!-- Unified Container for Scaling -->
-<div id="main-container">
+<main id="main-container">
     
     <!-- Background Pattern -->
     <canvas id="patternCanvas"></canvas>
 
     <!-- Headers -->
-    <div class="header-group">
+    <header class="header-group">
         <h1>Anne's Birthday</h1>
-        <div class="tabs">
-            <button class="tab-btn active"  data-tab="pubs" onclick="showTab('pubs')">12 Pubs of Christmas</button> 
-            <button class="tab-btn " data-tab="bingo" onclick="showTab('bingo')">Pub Crawl Bingo</button>
+        <div class="tabs" role="tablist">
+            <button class="tab-btn active" data-tab="pubs" role="tab" aria-selected="true" aria-controls="pubsContent">12 Pubs of Christmas</button> 
+            <button class="tab-btn" data-tab="bingo" role="tab" aria-selected="false" aria-controls="bingoContent">Pub Crawl Bingo</button>
         </div>
-    </div>
+    </header>
     
     <!-- Tabbed Content: Bingo (default) -->
-    <div id="bingoContent" class="tab-content">
+    <div id="bingoContent" class="tab-content" role="tabpanel" aria-labelledby="tab-bingo">
         <!-- Grid -->
         <div class="bingo-grid" id="grid"></div>
 
         <!-- Controls -->
         <div class="controls">
-            <button class="reset-btn" onclick="resetBingo()">Reset Board</button>
+            <button class="reset-btn" id="reset-btn">Reset Board</button>
         </div>
     </div>
 
     <!-- Tabbed Content: 12 Pubs of Christmas -->
-    <div id="pubsContent" class="tab-content hidden">
+    <div id="pubsContent" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-pubs">
         <!-- centered-content is counter-scaled so it keeps readable width regardless of zoom -->
         <div class="centered-content counter-scale">
             <div class="pubs-panel" id="pubsPanel">
@@ -372,7 +383,7 @@
         </div>
     </div>
 
-</div>
+</main>
 
 <script>
     /* -----------------------------------------------------------
@@ -415,8 +426,11 @@
 
     // Tab switching for additional pages
     function showTab(name) {
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.tab === name);
+        const tabs = document.querySelectorAll('[role="tab"]');
+        tabs.forEach(btn => {
+            const isActive = btn.dataset.tab === name;
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-selected', isActive);
         });
 
         const bingoEl = document.getElementById('bingoContent');
@@ -429,6 +443,17 @@
             if (pubsEl) pubsEl.classList.remove('hidden');
             if (bingoEl) bingoEl.classList.add('hidden');
         }
+    }
+
+    // Attach tab click listeners
+    document.querySelectorAll('[role="tab"]').forEach(btn => {
+        btn.addEventListener('click', () => showTab(btn.dataset.tab));
+    });
+
+    // Attach reset button listener
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetBingo);
     }
 
 
