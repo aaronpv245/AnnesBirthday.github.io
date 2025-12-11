@@ -147,6 +147,8 @@ button.reset-btn:hover { background: #1a45a0; color: white; transform: translate
 .counter-scale { transform-origin: top center; }
 
 #pubsList { list-style: none; padding: 0; margin: 0; }
+.map-link { color: #1a45a0; font-weight: 700; text-decoration: underline; }
+.map-link:hover { color: #123275; }
 .pub-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; margin-bottom: 10px; border-radius: 12px; background: rgba(255,255,255,0.98); box-shadow: 0 2px 6px rgba(17,35,90,0.02); }
 .pub-label { flex: 1 1 auto; margin: 0; margin-right: 14px; line-height: 1.35; word-break: break-word; }
 .pub-checkbox { flex: 0 0 46px; height: 46px; border-radius: 12px; background: rgba(255,255,255,0.95); border: 1.5px solid #1a45a0; color: #1a45a0; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; position: relative; box-shadow: 2px 2px 4px rgba(26,69,160,0.12); transition: transform 0.12s ease, background 0.12s; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
