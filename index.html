@@ -312,8 +312,10 @@
  
         /* Ensure the pubs panel fits inside the decorative square and scrolls if needed */
         .pubs-panel {
-            width: 368px; /* 20% smaller than 460px */
-            height: 368px; /* 20% smaller than 460px */
+            /* Responsive: scale to device width, capped at design size */
+            width: min(90vw, 368px);
+            /* Allow vertical growth but cap to viewport for mobile usability */
+            max-height: min(75vh, 368px);
             overflow: auto;
             margin: 0 auto;
             background: rgba(255,255,255,0.95);
@@ -321,6 +323,7 @@
             border-radius: 18px;
             border: 1px solid #e6e9ff;
             box-shadow: 0 6px 14px rgba(17,35,90,0.06);
+            box-sizing: border-box;
         }
 
         /* Welcome Banner */
