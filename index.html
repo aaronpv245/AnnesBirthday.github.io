@@ -322,10 +322,105 @@
             border: 1px solid #e6e9ff;
             box-shadow: 0 6px 14px rgba(17,35,90,0.06);
         }
+
+        /* Welcome Banner */
+        .welcome-banner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.97);
+            color: #1a45a0;
+            padding: 50px 60px;
+            text-align: center;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(26, 69, 160, 0.25);
+            border: 2px solid #1a45a0;
+            border-radius: 20px;
+            font-family: 'Playfair Display', serif;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .welcome-banner::before,
+        .welcome-banner::after {
+            content: "";
+            position: absolute;
+            font-size: 3rem;
+            opacity: 0.7;
+            top: 20px;
+        }
+
+        .welcome-banner::before {
+            left: 20px;
+        }
+
+        .welcome-banner::after {
+            right: 20px;
+        }
+
+        .welcome-banner h2 {
+            margin: 0 0 15px 0;
+            font-size: 2.5rem;
+            font-style: italic;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .welcome-banner p {
+            margin: 0 0 25px 0;
+            font-size: 1.3rem;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            line-height: 1.4;
+        }
+
+        .welcome-banner button {
+            background: #1a45a0;
+            color: white;
+            border: 2px solid #1a45a0;
+            padding: 12px 40px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(26, 69, 160, 0.2);
+        }
+
+        .welcome-banner button:hover {
+            background: white;
+            color: #1a45a0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(26, 69, 160, 0.3);
+        }
+
+        .welcome-banner.hidden {
+            display: none;
+        }
+
+        /* Blur content when banner is active */
+        #main-container.banner-active {
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
+        .header-group.banner-active {
+            filter: blur(5px);
+            pointer-events: none;
+        }
  
     </style>
 </head>
 <body>
+
+<!-- Welcome Banner -->
+<div id="welcomeBanner" class="welcome-banner">
+    <h2>Welcome!</h2>
+    <p>Join Anne's Birthday Celebration!</p>
+    <button onclick="dismissWelcome()">Let's Go!</button>
+</div>
 
 <!-- Unified Container for Scaling -->
 <main id="main-container">
@@ -386,6 +481,36 @@
 </main>
 
 <script>
+    /* -----------------------------------------------------------
+       WELCOME BANNER
+       ----------------------------------------------------------- */
+    function dismissWelcome() {
+        const banner = document.getElementById('welcomeBanner');
+        const mainContainer = document.getElementById('main-container');
+        const headerGroup = document.querySelector('.header-group');
+        if (banner) {
+            banner.classList.add('hidden');
+        }
+        if (mainContainer) {
+            mainContainer.classList.remove('banner-active');
+        }
+        if (headerGroup) {
+            headerGroup.classList.remove('banner-active');
+        }
+    }
+
+    // Add blur effect on page load when banner is shown
+    window.addEventListener('load', () => {
+        const mainContainer = document.getElementById('main-container');
+        const headerGroup = document.querySelector('.header-group');
+        if (mainContainer) {
+            mainContainer.classList.add('banner-active');
+        }
+        if (headerGroup) {
+            headerGroup.classList.add('banner-active');
+        }
+    });
+
     /* -----------------------------------------------------------
        SCALING LOGIC
        ----------------------------------------------------------- */
