@@ -7,6 +7,9 @@
     <!-- Import a font that matches the Royal Copenhagen vibe -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <!-- Leaflet CSS for maps -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     
 </head>
 <body>
@@ -71,6 +74,10 @@
                 </ol>
 
                 
+            </div>
+            <div class="route-panel" id="routePanel">
+                <h2 class="route-title">Route Map</h2>
+                <div id="routeMap" class="route-map-container"></div>
             </div>
         </div>
     </div>
@@ -268,6 +275,66 @@
     initGrid();
     // Ensure the default tab is visible on load
     if (typeof showTab === 'function') showTab('pubs');
+
+    /* -----------------------------------------------------------
+       OPENSTREETMAP ROUTE INITIALIZATION
+       ----------------------------------------------------------- */
+    function initRouteMap() {
+        const map = L.map('routeMap').setView([51.5565, -0.1100], 14);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        const pubs = [
+            { lat: 51.556958, lng: -0.124811, name: '67A Tabley Road' },
+            { lat: 51.555436, lng: -0.121737, name: 'The Prince Edward' },
+            { lat: 51.561944, lng: -0.124748, name: 'The Crown' },
+            { lat: 51.562872, lng: -0.122741, name: 'The Landseer Arms' },
+            { lat: 51.559570, lng: -0.119548, name: 'The Swimmer at the Grafton Arms' },
+            { lat: 51.562110, lng: -0.080529, name: 'The Red Lion' },
+            { lat: 51.562054, lng: -0.079456, name: 'The Auld Shillelagh' },
+            { lat: 51.562084, lng: -0.073878, name: 'Three Crowns' },
+            { lat: 51.561725, lng: -0.073503, name: 'The Coach & Horses' },
+            { lat: 51.560972, lng: -0.073986, name: 'The Rochester Castle' },
+            { lat: 51.559141, lng: -0.074473, name: 'The White Hart' },
+            { lat: 51.555904, lng: -0.074865, name: 'Yucatan Bar' }
+        ];
+
+        // Add markers for each pub
+        pubs.forEach((pub, index) => {
+            const color = index === 0 || index === pubs.length - 1 ? '#1a45a0' : '#2b5bbd';
+            L.circleMarker([pub.lat, pub.lng], {
+                radius: 6,
+                fillColor: color,
+                color: '#123275',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).bindPopup(`<strong>${pub.name}</strong>`).addTo(map);
+        });
+
+        // Draw polyline connecting all pubs
+        const latlngs = pubs.map(pub => [pub.lat, pub.lng]);
+        L.polyline(latlngs, {
+            color: '#1a45a0',
+            weight: 2,
+            opacity: 0.7,
+            dashArray: '5, 5'
+        }).addTo(map);
+
+        // Fit map to route bounds
+        const group = new L.featureGroup(pubs.map(pub => L.latLng(pub.lat, pub.lng)));
+        map.fitBounds(group.getBounds(), { padding: [40, 40] });
+    }
+
+    // Initialize map after DOM is ready
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        initRouteMap();
+    } else {
+        document.addEventListener('DOMContentLoaded', initRouteMap);
+    }
 
     /* -----------------------------------------------------------
        PUBS CHECKBOXES + PERSISTENCE
