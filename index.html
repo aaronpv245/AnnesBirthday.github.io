@@ -1,3 +1,21 @@
+<!--
+    Webpage layout (HTML classes/IDs)
+
+    +-------------------------------------------------------------+
+    | .header-group                                               |
+    +-------------------------------------------------------------+
+    | #main-container                                             |
+    |  +-------------------------------------------------------+  |
+    |  | .bingo-grid (7x7 cells)                               |  |
+    |  |   - Interactive cells, persisted in localStorage      |  |
+    |  +-------------------------------------------------------+  |
+    |  | .controls (Reset, Share, Export buttons)              |  |
+    |  +-------------------------------------------------------+  |
+    |  | #patternCanvas (background canvas, decorative)        |  |
+    +-------------------------------------------------------------+
+    | .footer (attribution, copyright)                            |
+    +-------------------------------------------------------------+
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,6 +40,12 @@
             justify-content: center;
             /* small top/bottom padding so scrolling isn't flush to edges */
             padding: 20px 0 40px;
+        }
+
+        /* Moved from inline CSS in pubs panel h2 */
+        .pubs-title {
+            margin-top: 0;
+            color: #1a45a0;
         }
 
         /* --- THE SCALING CONTAINER --- 
@@ -323,7 +347,7 @@
         <!-- centered-content is counter-scaled so it keeps readable width regardless of zoom -->
         <div class="centered-content counter-scale">
             <div class="pubs-panel" id="pubsPanel">
-                <h2 style="margin-top:0;color:#1a45a0;">12 Pubs of Christmas — Nick Miller edition</h2>
+                <h2 class="pubs-title">12 Pubs of Christmas — Nick Miller edition</h2>
                 <p><strong>Overall rule:</strong> Respect the crawl. Any disrespect and you drink. When someone says '29' (The Schmidt way), everyone must drink.</p>
                 <p><strong>START:</strong> 3.30pm</p>
 
